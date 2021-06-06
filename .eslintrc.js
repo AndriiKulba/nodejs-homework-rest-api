@@ -12,5 +12,5 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 12,
   },
-  rules: {},
+  rules: { "comma-dangle": "off", "space-before-function-paren": "off" },
 };
