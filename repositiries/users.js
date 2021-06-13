@@ -26,6 +26,10 @@ const updateSubscription = async (id, body) => {
   return result;
 };
 
+const updateAvatar = async (id, avatar, idCloudAvatar = null) => {
+  return await User.updateOne({ _id: id }, { avatar ,idCloudAvatar});
+};
+
 const listUsers = async () => {
   const results = await User.find();
   return results;
@@ -37,5 +41,6 @@ module.exports = {
   create,
   updateToken,
   updateSubscription,
+  updateAvatar,
   listUsers,
 };

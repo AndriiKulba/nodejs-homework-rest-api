@@ -1,7 +1,13 @@
 const Users = require("../repositiries/users");
 const { HttpCode } = require("../helpers/constants");
 const jwt = require("jsonwebtoken");
+const fs = require("fs/promises");
+const path = require("path");
+
 require("dotenv").config();
+
+const UploadAvatarService = require("../services/local-upload");
+// const UploadAvatarService = require("../services/cloud-upload");
 const SECRET_KEY = process.env.SECRET_KEY;
 
 const signup = async (req, res, next) => {
@@ -14,11 +20,11 @@ const signup = async (req, res, next) => {
         message: "Email in use",
       });
     }
-    const newUser = await Users.create(req.body);
+    const { id, email, subscription, avatar } = await Users.create(req.body);
     return res.status(HttpCode.CREATED).json({
       status: "success",
       code: HttpCode.CREATED,
-      data: { email: newUser.email, subscription: newUser.subscription },
+      data: { id, email, subscription, avatarURL: avatar },
     });
   } catch (e) {
     next(e);
@@ -98,6 +104,52 @@ const updateUser = async (req, res, next) => {
     next(e);
   }
 };
+
+/*LOCAL*/
+const avatars = async (req, res, next) => {
+  try {
+    const id = req.user.id;
+    const uploads = new UploadAvatarService(process.env.AVATAR_OF_USERS);
+    const avatarURL = await uploads.saveAvatar({ idUser: id, file: req.file });
+
+    try {
+      await fs.unlink(path.join(process.env.AVATAR_OF_USERS, req.user.avatar));
+    } catch (error) {
+      console.log(error.message);
+    }
+    await Users.updateAvatar(id, avatarURL);
+    return res.status(HttpCode.OK).json({
+      status: "success",
+      code: HttpCode.OK,
+      data: { avatarURL },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/*CLOUD*/
+// const avatars = async (req, res, next) => {
+//   try {
+//     const id = req.user.id;
+//     const uploads = new UploadAvatarService();
+//     const { idCloudAvatar, avatarURL } = await uploads.saveAvatar(
+//       req.file.path,
+//       req.user.idCloudAvatar
+//     );
+
+//     await fs.unlink(req.file.path);
+//     await Users.updateAvatar(id, avatarURL, idCloudAvatar);
+//     return res.status(HttpCode.OK).json({
+//       status: "success",
+//       code: HttpCode.OK,
+//       data: { avatarURL },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 const listUsers = async (req, res, next) => {
   try {
     const users = await Users.listUsers();
@@ -109,4 +161,12 @@ const listUsers = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, login, logout, current, updateUser, listUsers };
+module.exports = {
+  signup,
+  login,
+  logout,
+  current,
+  avatars,
+  updateUser,
+  listUsers,
+};
