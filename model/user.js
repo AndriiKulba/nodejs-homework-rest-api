@@ -3,6 +3,8 @@ const gr = require("gravatar");
 const { Subscription } = require("../helpers/constants");
 
 const bcrypt = require("bcryptjs");
+const { nanoid } = require("nanoid");
+const { verify } = require("jsonwebtoken");
 const SALT_WORK_FACTOR = 8;
 
 const userSchema = new Schema(
@@ -36,7 +38,14 @@ const userSchema = new Schema(
       },
     },
     idCloudAvatar: { type: String, default: null },
+    verify: { type: Boolean, default: false },
+    verifyToken: {
+      type: String,
+      required: [true, "Verify token is required"],
+      default: nanoid(),
+    },
   },
+
   {
     versionKey: false,
     timestamps: true,

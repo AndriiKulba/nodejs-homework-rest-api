@@ -20,7 +20,7 @@ const schemaUpdateContact = Joi.object({
   email: Joi.string()
     .email({
       minDomainSegments: 2,
-      tlds: { allow: ["ua", "gmail", "com", "net", "org"] },
+      tlds: { allow: ["ua", "gmail", "com", "net", "org", "meta"] },
     })
     .optional(),
   phone: Joi.string()
